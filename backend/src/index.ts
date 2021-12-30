@@ -9,7 +9,8 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 
 import { RequestHandlerFactory } from './types';
-import createNewDevice from './routes/create-new-device';
+import authenticate from './routes/authenticate';
+import createNewAccessCard from './routes/create-new-access-card';
 
 const logger = pino();
 
@@ -19,6 +20,7 @@ const db = levelup(process.env.TEST ? memdown() : leveldown(dbPath));
 const app = express();
 
 if (!process.env.TEST) {
+  // TODO: strip sensitive info from logs
   app.use(pinoHttp({ logger }));
 }
 
@@ -27,14 +29,13 @@ app.use(express.json());
 
 const apiRouter = express.Router();
 
-const routes: [
-  {
-    method: 'get' | 'post' | 'put' | 'delete',
-    path: string,
-    handler: RequestHandlerFactory,
-  },
-] = [
-  { method: 'post', path: '/device', handler: createNewDevice },
+const routes: {
+  method: 'get' | 'post' | 'put' | 'delete',
+  path: string,
+  handler: RequestHandlerFactory,
+}[] = [
+  { method: 'post', path: '/authenticate', handler: authenticate },
+  { method: 'post', path: '/access-card', handler: createNewAccessCard },
 ];
 
 routes.forEach((route) => {
