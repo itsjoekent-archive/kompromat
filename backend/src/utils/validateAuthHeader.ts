@@ -22,7 +22,7 @@ export default async function validateAuthHeader(
     return null;
   }
 
-  if (!token.expiresAt || token.expiresAt > Date.now()) {
+  if (!token.expiresAt || token.expiresAt < Date.now()) {
     await plugins.db.del(tokenKey(tokenId));
     return null;
   }

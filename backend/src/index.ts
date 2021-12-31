@@ -8,7 +8,9 @@ import pinoHttp from 'pino-http';
 import db from './db';
 import { RequestHandlerFactory } from './types';
 import authenticate from './routes/authenticate';
-import createNewAccessCard from './routes/create-new-access-card';
+import createAccessCard from './routes/create-access-card';
+import createDocument from './routes/create-document';
+import getDocuments from './routes/get-documents';
 import initializeVault from './routes/initialize-vault';
 
 const logger = pino();
@@ -30,8 +32,10 @@ const routes: {
   path: string,
   handler: RequestHandlerFactory,
 }[] = [
+  { method: 'post', path: '/access-card', handler: createAccessCard },
   { method: 'post', path: '/authenticate', handler: authenticate },
-  { method: 'post', path: '/access-card', handler: createNewAccessCard },
+  { method: 'get', path: '/documents', handler: getDocuments },
+  { method: 'post', path: '/document', handler: createDocument },
   { method: 'post', path: '/vault/initialize', handler: initializeVault },
 ];
 

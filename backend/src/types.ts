@@ -10,6 +10,32 @@ export interface AccessCard {
   createdAt: number;
 }
 
+export interface Document {
+  id: string;
+  name: string;
+  fields: DocumentField[];
+  createdAt: number;
+}
+
+export enum DocumentFieldType {
+  PASSWORD = 'PASSWORD',
+  TWO_FACTOR = 'TWO_FACTOR',
+  NOTE = 'NOTE',
+}
+
+export interface DocumentField {
+  id: string;
+  type: DocumentFieldType;
+  value: string;
+}
+
+export interface EncryptedDocument {
+  id: string;
+  name: string;
+  fields: string;
+  createdAt: number;
+}
+
 export interface RouteHandlerPlugins {
   logger: BaseLogger,
   db: DB,

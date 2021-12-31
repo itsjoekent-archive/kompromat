@@ -11,7 +11,7 @@ interface AccessCardBody {
   pin?: string;
 }
 
-function createNewAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
+function createAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
   async function routeHandler(request: Request, response: Response) {
     const { body } = request;
     const { name, pin }: AccessCardBody = body;
@@ -58,4 +58,4 @@ function createNewAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
   return routeHandler;
 }
 
-export default createNewAccessCard;
+export default createAccessCard;
