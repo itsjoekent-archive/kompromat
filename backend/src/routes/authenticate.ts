@@ -51,7 +51,7 @@ function authenticate(plugins: RouteHandlerPlugins): RequestHandler {
       return;
     }
 
-    const tokenId = await randomBytes(64);
+    const tokenId = await randomBytes(32);
     const tokenAccessSecret = await randomBytes(32);
 
     const tokenVaultKey = encrypt(tokenAccessSecret, vaultKey);
