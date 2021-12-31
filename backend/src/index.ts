@@ -2,20 +2,16 @@ import path from 'path';
 
 import cors from 'cors';
 import express, { Request, Response } from 'express';
-import leveldown from 'leveldown';
-import levelup from 'levelup';
-import memdown from 'memdown';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
+import db from './db';
 import { RequestHandlerFactory } from './types';
 import authenticate from './routes/authenticate';
 import createNewAccessCard from './routes/create-new-access-card';
+import initializeVault from './routes/initialize-vault';
 
 const logger = pino();
-
-const dbPath = path.join(process.cwd(), 'data');
-const db = levelup(process.env.TEST ? memdown() : leveldown(dbPath));
 
 const app = express();
 
@@ -36,6 +32,7 @@ const routes: {
 }[] = [
   { method: 'post', path: '/authenticate', handler: authenticate },
   { method: 'post', path: '/access-card', handler: createNewAccessCard },
+  { method: 'post', path: '/vault/initialize', handler: initializeVault },
 ];
 
 routes.forEach((route) => {

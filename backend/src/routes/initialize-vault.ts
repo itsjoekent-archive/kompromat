@@ -1,41 +1,36 @@
+import { hash } from 'bcrypt';
 import { Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
 import { AccessCard, RequestHandler, RouteHandlerPlugins } from '../types';
 import { encrypt } from '../utils/cryptography';
-import { accessCardKey } from '../utils/keys';
+import { HAS_INITIALIZED, accessCardKey } from '../utils/keys';
 import randomBytes from '../utils/randomBytes';
-import validateAuthHeader from '../utils/validateAuthHeader';
 
-interface AccessCardBody {
-  name?: string;
+interface VaultBody {
   pin?: string;
 }
 
-function createNewAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
+function initializeVault(plugins: RouteHandlerPlugins): RequestHandler {
   async function routeHandler(request: Request, response: Response) {
-    const { body } = request;
-    const { name, pin }: AccessCardBody = body;
-
-    if (!name || typeof name !== 'string' || name.length > 64) {
-      response.status(400).json({ error: 'Invalid access card name' });
-      return;
-    }
+    const { body, headers } = request;
+    const { pin }: VaultBody = body;
 
     if (!pin || isNaN(parseInt(pin)) || pin.length !== 6) {
       response.status(400).json({ error: 'Invalid vault pin' });
       return;
     }
 
-    const vaultKey = await validateAuthHeader(plugins, request);
+    const hasInitialized = await plugins.db.get(HAS_INITIALIZED);
 
-    if (!vaultKey) {
-      response.status(401).json({ error: 'Not authenticated' });
+    if (hasInitialized) {
+      response.status(400).json({ error: 'Vault already initialized' });
       return;
     }
 
     const id = uuid();
 
-    const secret = await randomBytes(250);
+    const secret = await randomBytes(26);
+    const vaultKey = await randomBytes(32);
 
     const encryptionKey = `${secret}${pin}`;
 
@@ -44,18 +39,19 @@ function createNewAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
 
     const accessCard: AccessCard = {
       id,
-      name,
+      name: 'Default Access Card',
       key,
       challenge,
       createdAt: Date.now(),
     };
 
     await plugins.db.put(accessCardKey(id), accessCard);
+    await plugins.db.put(HAS_INITIALIZED, true);
 
-    response.json({ id, secret });
+    response.json({ accessCardId: id, accessCardSecret: secret });
   }
 
   return routeHandler;
 }
 
-export default createNewAccessCard;
+export default initializeVault;

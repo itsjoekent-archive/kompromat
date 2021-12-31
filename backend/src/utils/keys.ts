@@ -1,7 +1,9 @@
 export function accessCardKey(id: string) {
-  return `access-card::${id}`;
+  return `access_cards.${id}`;
 }
 
 export function tokenKey(value: string) {
-  return `token::${value}`;
+  return `tokens.${value}`;
 }
+
+export const HAS_INITIALIZED = 'meta.HAS_INITIALIZED';
