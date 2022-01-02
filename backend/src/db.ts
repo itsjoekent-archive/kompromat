@@ -87,7 +87,8 @@ type ClearItems = () => Promise<void>;
 async function clear(): Promise<void> {
   const releaseLock = await waitForLock();
 
-  writeDBFile({});
+  await writeDBFile({});
+
   releaseLock();
 }
 
