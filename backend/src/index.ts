@@ -7,11 +7,19 @@ import pinoHttp from 'pino-http';
 
 import db from './db';
 import { RequestHandlerFactory } from './types';
+import archiveDocument from './routes/archive-document';
 import authenticate from './routes/authenticate';
 import createAccessCard from './routes/create-access-card';
 import createDocument from './routes/create-document';
+import deleteDocument from './routes/delete-document';
+import getAccessCards from './routes/get-access-cards';
+import getArchivedDocuments from './routes/get-archived-documents';
 import getDocuments from './routes/get-documents';
 import initializeVault from './routes/initialize-vault';
+import restoreDocument from './routes/restore-document';
+import revokeAccessCard from './routes/revoke-access-card';
+import updateAccessCard from './routes/update-access-card';
+import updateDocument from './routes/update-document';
 
 const logger = pino();
 
@@ -32,10 +40,18 @@ const routes: {
   path: string,
   handler: RequestHandlerFactory,
 }[] = [
-  { method: 'post', path: '/access-card', handler: createAccessCard },
+  { method: 'get', path: '/access-cards', handler: getAccessCards },
+  { method: 'post', path: '/access-cards', handler: createAccessCard },
+  { method: 'put', path: '/access-cards/:id', handler: updateAccessCard },
+  { method: 'post', path: '/access-cards/:id/revoke', handler: revokeAccessCard },
   { method: 'post', path: '/authenticate', handler: authenticate },
   { method: 'get', path: '/documents', handler: getDocuments },
-  { method: 'post', path: '/document', handler: createDocument },
+  { method: 'post', path: '/documents', handler: createDocument },
+  { method: 'put', path: '/documents/:id', handler: updateDocument },
+  { method: 'delete', path: '/documents/:id', handler: deleteDocument },
+  { method: 'post', path: '/documents/:id/archive', handler: archiveDocument },
+  { method: 'post', path: '/documents/:id/restore', handler: restoreDocument },
+  { method: 'get', path: '/documents/archived', handler: getArchivedDocuments },
   { method: 'post', path: '/vault/initialize', handler: initializeVault },
 ];
 
@@ -45,13 +61,21 @@ routes.forEach((route) => {
     async function wrapper(request: Request, response: Response) {
       try {
         await route.handler({ logger, db })(request, response);
-      } catch (error) {
-        logger.error(error);
+      } catch (error: any) {
+        if (process.env.TEST) {
+          logger.error(error?.stack || error);
+        } else {
+          logger.error(error?.message);
+        }
+
         response.status(500).json({ error: 'Encountered unexpected server error' });
       }
     },
   );
 });
+
+apiRouter.use('*', (request: Request, response: Response) =>
+  response.status(404).json({ error: 'not found' }));
 
 app.use('/api', apiRouter);
 
@@ -70,5 +94,7 @@ if (!process.env.TEST) {
   const PORT = process.env.PORT;
   app.listen(PORT, () => logger.info(`M.I.D.N.I.G.H.T. is listening on PORT:${PORT}`));
 }
+
+// reaper for tokens
 
 export default { app, db };

@@ -15,6 +15,7 @@ export interface Document {
   name: string;
   fields: DocumentField[];
   createdAt: number;
+  updatedAt: number;
 }
 
 export enum DocumentFieldType {
@@ -34,6 +35,7 @@ export interface EncryptedDocument {
   name: string;
   fields: string;
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface RouteHandlerPlugins {

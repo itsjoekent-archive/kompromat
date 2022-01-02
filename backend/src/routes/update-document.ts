@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { v4 as uuid } from 'uuid';
 import {
   Document,
   DocumentField,
@@ -16,10 +15,27 @@ interface DocumentBody {
   fields?: DocumentField[];
 }
 
-function createDocument(plugins: RouteHandlerPlugins): RequestHandler {
+interface RequestParams {
+  id?: string;
+}
+
+function updateDocument(plugins: RouteHandlerPlugins): RequestHandler {
   async function routeHandler(request: Request, response: Response) {
-    const { body } = request;
+    const vaultKey = await validateAuthHeader(plugins, request);
+
+    if (!vaultKey) {
+      response.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    const { body, params } = request;
     const { name, fields }: DocumentBody = body;
+    const { id }: RequestParams = params;
+
+    if (!id) {
+      response.status(404).json({ error: 'Document not found' });
+      return;
+    }
 
     if (!name || typeof name !== 'string' || name.length > 64) {
       response.status(400).json({ error: 'Invalid access card name' });
@@ -31,20 +47,17 @@ function createDocument(plugins: RouteHandlerPlugins): RequestHandler {
       return;
     }
 
-    const vaultKey = await validateAuthHeader(plugins, request);
+    const encryptedDocument: EncryptedDocument | null = await plugins.db.get(documentKey(id));
 
-    if (!vaultKey) {
-      response.status(401).json({ error: 'Not authenticated' });
+    if (!encryptedDocument) {
+      response.status(404).json({ error: 'Document not found' });
       return;
     }
 
-    const id = uuid();
-
     const documentUnsafe: Document = {
-      id,
-      name,
+      ...encryptedDocument,
       fields,
-      createdAt: Date.now(),
+      name,
       updatedAt: Date.now(),
     };
 
@@ -62,4 +75,4 @@ function createDocument(plugins: RouteHandlerPlugins): RequestHandler {
   return routeHandler;
 }
 
-export default createDocument;
+export default updateDocument;

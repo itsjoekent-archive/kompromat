@@ -7,14 +7,14 @@ import {
   RouteHandlerPlugins,
 } from '../types';
 import { decrypt } from '../utils/cryptography';
-import { documentsKey } from '../utils/keys';
+import { archivedDocumentsKey } from '../utils/keys';
 import validateAuthHeader from '../utils/validateAuthHeader';
 
 interface EncryptedDocumentsContainer {
   [key: string]: EncryptedDocument;
 }
 
-function getDocuments(plugins: RouteHandlerPlugins): RequestHandler {
+function getArchivedDocuments(plugins: RouteHandlerPlugins): RequestHandler {
   async function routeHandler(request: Request, response: Response) {
     const vaultKey = await validateAuthHeader(plugins, request);
 
@@ -23,7 +23,7 @@ function getDocuments(plugins: RouteHandlerPlugins): RequestHandler {
       return;
     }
 
-    const encryptedDocuments: EncryptedDocumentsContainer | null = await plugins.db.get(documentsKey);
+    const encryptedDocuments: EncryptedDocumentsContainer | null = await plugins.db.get(archivedDocumentsKey);
     const decryptedDocuments: Document[] = [];
 
     if (!encryptedDocuments) {
@@ -53,4 +53,4 @@ function getDocuments(plugins: RouteHandlerPlugins): RequestHandler {
   return routeHandler;
 }
 
-export default getDocuments;
+export default getArchivedDocuments;

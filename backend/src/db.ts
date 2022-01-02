@@ -103,8 +103,17 @@ async function del(key: string): Promise<void> {
   releaseLock();
 }
 
-async function append(key: string, data: any): Promise<void> {
+type BatchOperator = (db: any) => Promise<any>;
+type Batch = (operation: BatchOperator) => Promise<void>;
+async function batch(operation: BatchOperator): Promise<void> {
+  const releaseLock = await waitForLock();
 
+  const db = await parseDbFile();
+  const result = await operation(db);
+
+  await writeDBFile(result);
+
+  releaseLock();
 }
 
 export interface DB {
@@ -112,6 +121,7 @@ export interface DB {
   put: PutItem,
   del: DeleteItem,
   clear: ClearItems,
+  batch: Batch,
 }
 
 const DB_Functions: DB = {
@@ -119,6 +129,7 @@ const DB_Functions: DB = {
   put,
   del,
   clear,
+  batch,
 };
 
 export default DB_Functions;

@@ -35,7 +35,7 @@ function createAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
 
     const id = uuid();
 
-    const secret = await randomBytes(250);
+    const secret = await randomBytes(26);
 
     const encryptionKey = `${secret}${pin}`;
 
@@ -52,7 +52,7 @@ function createAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
 
     await plugins.db.put(accessCardKey(id), accessCard);
 
-    response.json({ id, secret });
+    response.json({ accessCard: { id, name, secret } });
   }
 
   return routeHandler;
