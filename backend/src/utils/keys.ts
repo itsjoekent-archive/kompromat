@@ -10,6 +10,12 @@ export function archivedDocumentKey(id: string) {
   return `${archivedDocumentsKey}.${id}`;
 }
 
+export const authenticationLog = 'authenticationLog';
+
+export function configSettingKey(name: string) {
+  return `config.${name}`;
+}
+
 export const documentsKey = 'documents';
 
 export function documentKey(id: string) {

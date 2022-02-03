@@ -10,6 +10,12 @@ export interface AccessCard {
   createdAt: number;
 }
 
+export interface AuthenticationLogEntry {
+  timestamp: number;
+  isSuccessful: boolean;
+  description: string;
+}
+
 export interface Document {
   id: string;
   name: string;
