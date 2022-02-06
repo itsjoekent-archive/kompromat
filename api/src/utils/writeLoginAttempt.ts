@@ -1,10 +1,11 @@
 import getValue from 'get-value';
 import setValue from 'set-value';
+import ms from 'ms';
 import { Request } from 'express';
 import { RouteHandlerPlugins, AuthenticationLogEntry } from '../types';
 import { authenticationLog, configSettingKey } from '../utils/keys';
 
-const LOG_EXPIRATION = 1000 * 60 * 60 * 24 * 90;
+const LOG_EXPIRATION = ms('2 weeks');
 
 export default async function writeLoginAttempt(
   description: string,
