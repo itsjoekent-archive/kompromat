@@ -4,7 +4,7 @@ import ms from 'ms';
 
 const blockedIps = new LRU<string, number>({ max: 1000, maxAge: ms('1 week') });
 
-function getIp(request: Request): string {
+export function getIp(request: Request): string {
   return (request.headers['x-forwarded-for'] || request.socket.remoteAddress || '').toString();
 }
 
@@ -27,12 +27,14 @@ export function reset() {
 export interface FirewallPlugin {
   isBlocked: (request: Request) => boolean;
   failedLoginAttempt: (request: Request) => void;
+  getIp: (request: Request) => string;
   reset: () => void;
 }
 
 const firewall: FirewallPlugin = {
   isBlocked,
   failedLoginAttempt,
+  getIp,
   reset,
 };
 

@@ -7,14 +7,14 @@ import { authenticationLog, configSettingKey } from '../utils/keys';
 const LOG_EXPIRATION = 1000 * 60 * 60 * 24 * 90;
 
 export default async function writeLoginAttempt(
+  description: string,
   isSuccessful: boolean,
   plugins: RouteHandlerPlugins,
-  request: Request
 ): Promise<void> {
   const entry: AuthenticationLogEntry = {
-    timestamp: Date.now(),
+    description,
     isSuccessful,
-    description: '',
+    timestamp: Date.now(),
   };
 
   await plugins.db.batch(async (db: any) => {

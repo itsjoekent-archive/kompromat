@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import ms from 'ms';
+import useragent from 'useragent';
 import {
   AccessCard,
   RequestHandler,
@@ -9,6 +10,7 @@ import {
 import { encrypt, decrypt } from '../utils/cryptography';
 import { accessCardKey, tokenKey } from '../utils/keys';
 import randomBytes from '../utils/randomBytes';
+import writeLoginAttempt from '../utils/writeLoginAttempt';
 
 interface Credentials {
   accessCardId?: string;
@@ -75,6 +77,10 @@ function authenticate(plugins: RouteHandlerPlugins): RequestHandler {
     };
 
     await plugins.db.put(tokenKey(tokenId), token);
+
+    const userAgentHeader = request.headers['user-agent'] || '';
+    const description = `Login from ${plugins.firewall.getIp(request)} on ${useragent.lookup(userAgentHeader).toString()}`;
+    await writeLoginAttempt(description, true, plugins);
 
     response.json({ tokenId, tokenAccessSecret });
   }

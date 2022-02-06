@@ -92,7 +92,7 @@ describe('Authentication', () => {
       });
   });
 
-  test.only('ip gets blocked', async () => {
+  test('ip gets blocked', async () => {
     const init = await supertest(app)
       .post('/api/vault/initialize')
       .send({ pin: '000000' })
