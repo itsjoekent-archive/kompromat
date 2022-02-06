@@ -1,9 +1,16 @@
 const server = require('../dist');
 const supertest = require('supertest');
 
-const { default: { app, db } } = server;
+const { default: { app, db, firewall } } = server;
 
-afterEach(async () => await db.clear());
+afterEach(async () => {
+  await db.clear();
+  firewall.reset();
+});
+
+async function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 describe('Initialization', () => {
   test('initializes vault', async () => {
@@ -83,6 +90,42 @@ describe('Authentication', () => {
       .then((response) => {
         expect(response.body.error).toBeDefined();
       });
+  });
+
+  test.only('ip gets blocked', async () => {
+    const init = await supertest(app)
+      .post('/api/vault/initialize')
+      .send({ pin: '000000' })
+      .expect(200);
+
+    for (let index = 0; index <= 6; index++) {
+      await supertest(app)
+        .post('/api/authenticate')
+        .set('X-Forwarded-For', '192.168.1.1')
+        .send({ pin: '000001', ...init.body })
+    }
+
+    await supertest(app)
+      .post('/api/authenticate')
+      .set('X-Forwarded-For', '192.168.1.1')
+      .send({ pin: '000000', ...init.body })
+      .expect(401);
+
+    const token = await supertest(app)
+      .post('/api/authenticate')
+      .set('X-Forwarded-For', '192.168.1.2')
+      .send({ pin: '000000', ...init.body })
+      .expect(200);
+
+    const accessCard = await supertest(app)
+      .post('/api/access-cards')
+      .set('X-Forwarded-For', '192.168.1.1')
+      .set({
+        'x-kompromat-token-id': token.body.tokenId,
+        'x-kompromat-token-access-secret': token.body.tokenAccessSecret,
+      })
+      .send({ name: 'test', pin: '000000' })
+      .expect(401);
   });
 });
 

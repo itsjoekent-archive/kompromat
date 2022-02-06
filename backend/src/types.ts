@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import type { BaseLogger } from 'pino';
-import type { DB } from './db';
+import type { DBPlugin } from './db';
+import type { FirewallPlugin } from './firewall';
 
 export interface AccessCard {
   id: string;
@@ -45,8 +46,9 @@ export interface EncryptedDocument {
 }
 
 export interface RouteHandlerPlugins {
-  logger: BaseLogger,
-  db: DB,
+  db: DBPlugin;
+  firewall: FirewallPlugin;
+  logger: BaseLogger;
 };
 
 export type RequestHandler = (request: Request, response: Response) => void;

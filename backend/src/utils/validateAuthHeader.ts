@@ -3,10 +3,15 @@ import { AccessCard, RouteHandlerPlugins, Token } from '../types';
 import { decrypt } from '../utils/cryptography';
 import { accessCardKey, tokenKey } from '../utils/keys';
 
-export default async function validateAuthHeader(
+interface ValidationResult {
+  tokenAccessSecret: string;
+  vaultKey: string;
+}
+
+async function validationLogic(
   plugins: RouteHandlerPlugins,
   request: Request
-): Promise<string | null> {
+): Promise<ValidationResult | null> {
   const tokenId = request.get('x-kompromat-token-id');
   if (!tokenId) {
     return null;
@@ -36,5 +41,24 @@ export default async function validateAuthHeader(
     return null;
   }
 
-  return decrypt(tokenAccessSecret, token.vaultKey);
+  return { tokenAccessSecret, vaultKey: token.vaultKey };
+}
+
+export default async function validateAuthHeader(
+  plugins: RouteHandlerPlugins,
+  request: Request
+): Promise<string | null> {
+  if (plugins.firewall.isBlocked(request)) {
+    return null;
+  }
+
+  const validationResult = await validationLogic(plugins, request);
+
+  if (!validationResult) {
+    plugins.firewall.failedLoginAttempt(request);
+    return null;
+  }
+
+  const { tokenAccessSecret, vaultKey } = validationResult;
+  return decrypt(tokenAccessSecret, vaultKey);
 }

@@ -21,18 +21,26 @@ function authenticate(plugins: RouteHandlerPlugins): RequestHandler {
     const { body } = request;
     const { accessCardId, accessCardSecret, pin }: Credentials = body;
 
+    if (plugins.firewall.isBlocked(request)) {
+      response.status(401).json({ error: 'Invalid login credentials' });
+      return;
+    }
+
     if (!accessCardId || !accessCardSecret) {
+      plugins.firewall.failedLoginAttempt(request);
       response.status(400).json({ error: 'Missing access card id and/or access card secret' });
       return;
     }
 
     const accessCard = await plugins.db.get(accessCardKey(accessCardId)) as AccessCard;
     if (!accessCard) {
+      plugins.firewall.failedLoginAttempt(request);
       response.status(401).json({ error: 'Invalid login credentials' });
       return;
     }
 
     if (!pin) {
+      plugins.firewall.failedLoginAttempt(request);
       response.status(401).json({ error: 'Missing pin' });
       return;
     }
@@ -40,6 +48,7 @@ function authenticate(plugins: RouteHandlerPlugins): RequestHandler {
     const decryptionKey = `${accessCardSecret}${pin}`;
 
     if (decrypt(decryptionKey, accessCard.challenge) !== 'kompromat') {
+      plugins.firewall.failedLoginAttempt(request);
       response.status(401).json({ error: 'Invalid login credentials' });
       return;
     }

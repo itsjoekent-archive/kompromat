@@ -15,6 +15,11 @@ function initializeVault(plugins: RouteHandlerPlugins): RequestHandler {
     const { body, headers } = request;
     const { pin }: VaultBody = body;
 
+    if (plugins.firewall.isBlocked(request)) {
+      response.status(401).json({ error: 'Cannot initialize vault' });
+      return;
+    }
+
     if (!pin || isNaN(parseInt(pin)) || pin.length !== 6) {
       response.status(400).json({ error: 'Invalid vault pin' });
       return;

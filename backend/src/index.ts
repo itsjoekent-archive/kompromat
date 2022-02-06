@@ -6,6 +6,7 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 
 import db from './db';
+import firewall from './firewall';
 import { RequestHandlerFactory } from './types';
 import archiveDocument from './routes/archive-document';
 import authenticate from './routes/authenticate';
@@ -60,7 +61,7 @@ routes.forEach((route) => {
     route.path,
     async function wrapper(request: Request, response: Response) {
       try {
-        await route.handler({ logger, db })(request, response);
+        await route.handler({ logger, db, firewall })(request, response);
       } catch (error: any) {
         if (process.env.TEST) {
           logger.error(error?.stack || error);
@@ -97,4 +98,4 @@ if (!process.env.TEST) {
 
 // reaper for tokens
 
-export default { app, db };
+export default { app, db, firewall };

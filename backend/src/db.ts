@@ -117,7 +117,7 @@ async function batch(operation: BatchOperator): Promise<void> {
   releaseLock();
 }
 
-export interface DB {
+export interface DBPlugin {
   get: GetItem,
   put: PutItem,
   del: DeleteItem,
@@ -125,7 +125,7 @@ export interface DB {
   batch: Batch,
 }
 
-const DB_Functions: DB = {
+const DB_Functions: DBPlugin = {
   get,
   put,
   del,

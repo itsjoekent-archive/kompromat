@@ -18,15 +18,11 @@ export default async function writeLoginAttempt(
   };
 
   await plugins.db.batch(async (db: any) => {
-    const log = getValue(db, authenticationLog, []) as AuthenticationLogEntry[];
-    const updatedLog = [...log, entry].filter((item) => (item.timestamp + LOG_EXPIRATION) > Date.now());
+    const log = (getValue(db, authenticationLog) || []) as AuthenticationLogEntry[];
+    const updatedLog = [...log, entry]
+      .filter((item) => (item.timestamp + LOG_EXPIRATION) > Date.now());
 
     setValue(db, authenticationLog, updatedLog);
-
     return db;
   });
-
-  const log = await plugins.db.get(authenticationLog) as AuthenticationLogEntry[];
-  // if XX failed attempts over <config limit>, process.exit
-
 }
