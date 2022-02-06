@@ -1,6 +1,6 @@
 node_modules/
 
-backend/kompromat.json
-backend/dist
+api/kompromat.json
+api/dist
 
 .DS_Store
