@@ -24,7 +24,14 @@ import revokeAccessCard from './routes/revoke-access-card';
 import updateAccessCard from './routes/update-access-card';
 import updateDocument from './routes/update-document';
 
-const logger = pino();
+const logger = pino({
+  redact: {
+    paths: [
+      'req.headers.authorization',
+      'req.body',
+    ],
+  },
+});
 
 const app = express();
 
