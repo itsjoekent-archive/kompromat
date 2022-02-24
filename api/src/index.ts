@@ -2,11 +2,13 @@ import path from 'path';
 
 import cors from 'cors';
 import express, { Request, Response } from 'express';
+import ms from 'ms';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
 import db from './db';
 import firewall from './firewall';
+import reaper from './reaper';
 import { RequestHandlerFactory } from './types';
 import archiveDocument from './routes/archive-document';
 import authenticate from './routes/authenticate';
@@ -93,9 +95,9 @@ app.use('*', express.static('public', {
 
 if (!process.env.TEST) {
   const PORT = process.env.PORT;
-  app.listen(PORT, () => logger.info(`M.I.D.N.I.G.H.T. is listening on PORT:${PORT}`));
-}
+  app.listen(PORT, () => logger.info(`Kompromat is listening on PORT:${PORT}`));
 
-// reaper for tokens
+  setInterval(() => reaper({ logger, db }), ms('5 minutes'));
+}
 
 export default { app, db, firewall };

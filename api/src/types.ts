@@ -62,3 +62,7 @@ export interface Token {
   expiresAt: number;
   createdBy: string;
 }
+
+export interface TokensContainer {
+  [key: string]: Token;
+}

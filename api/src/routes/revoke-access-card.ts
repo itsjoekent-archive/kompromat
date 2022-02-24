@@ -2,7 +2,7 @@ import getValue from 'get-value';
 import unsetValue from 'unset-value';
 import { Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
-import { AccessCard, RequestHandler, RouteHandlerPlugins, Token } from '../types';
+import { AccessCard, RequestHandler, RouteHandlerPlugins, Token, TokensContainer } from '../types';
 import { decrypt } from '../utils/cryptography';
 import { accessCardsKey, accessCardKey, tokensKey, tokenKey } from '../utils/keys';
 import randomBytes from '../utils/randomBytes';
@@ -19,10 +19,6 @@ interface RequestParams {
 
 interface AccessCardsContainer {
   [key: string]: AccessCard;
-}
-
-interface TokensContainer {
-  [key: string]: Token;
 }
 
 function revokeAccessCard(plugins: RouteHandlerPlugins): RequestHandler {
