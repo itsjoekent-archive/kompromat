@@ -42,6 +42,27 @@ describe('Initialization', () => {
       .send({ pin: '0000' })
       .expect(400);
   });
+
+  test('get vault status', async () => {
+    await supertest(app)
+      .get('/api/vault/status')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.hasInitialized).toBe(false);
+      });
+
+    await supertest(app)
+      .post('/api/vault/initialize')
+      .send({ pin: '000000' })
+      .expect(200);
+
+    await supertest(app)
+      .get('/api/vault/status')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.hasInitialized).toBe(true);
+      });
+  });
 });
 
 describe('Authentication', () => {

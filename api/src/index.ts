@@ -23,6 +23,7 @@ import restoreDocument from './routes/restore-document';
 import revokeAccessCard from './routes/revoke-access-card';
 import updateAccessCard from './routes/update-access-card';
 import updateDocument from './routes/update-document';
+import vaultStatus from './routes/vault-status';
 
 const logger = pino({
   redact: {
@@ -36,7 +37,6 @@ const logger = pino({
 const app = express();
 
 if (!process.env.TEST) {
-  // TODO: strip sensitive info from logs
   app.use(pinoHttp({ logger }));
 }
 
@@ -63,6 +63,7 @@ const routes: {
   { method: 'post', path: '/documents/:id/restore', handler: restoreDocument },
   { method: 'get', path: '/documents/archived', handler: getArchivedDocuments },
   { method: 'post', path: '/vault/initialize', handler: initializeVault },
+  { method: 'get', path: '/vault/status', handler: vaultStatus },
 ];
 
 routes.forEach((route) => {
